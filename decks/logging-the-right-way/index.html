@@ -1,0 +1,3002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logging the Right Way</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   THEME VARIABLES
+   Change the Broadside palette and type scale here.
+   =========================================== */
+:root {
+    --stage-bg: #1F1633;
+    --slide-bg: #1F1633;
+    --ink: #1F1633;
+    --ink-alt: #36166B;
+    --fire: #E1567C;
+    --cream: #F9F8FF;
+    --cream-muted: #BFB6D6;
+    --cream-hint: #79628C;
+    --border: #4A2C6F;
+    --sentry-glyph-mask: url("data:image/svg+xml,%3Csvg%20viewBox='0%200%20256%20227'%20xmlns='http://www.w3.org/2000/svg'%3E%3Cpath%20d='M148.367708,12.4025287%20C144.036807,5.21480737%20136.258026,0.820118864%20127.866362,0.820118864%20C119.474697,0.820118864%20111.695916,5.21480737%20107.365016,12.4025287%20L73.6403017,70.165071%20C126.066153,96.3390588%20160.689085,148.341727%20164.615024,206.806542%20L140.93597,206.806542%20C137.017513,156.694333%20106.874845,112.396698%2061.6982677,90.3588968%20L30.4849684,144.32869%20C55.8497707,155.704426%2073.6778379,179.211206%2077.7918243,206.704035%20L23.4120041,206.704035%20C22.1018479,206.611361%2020.9266153,205.864669%2020.2861278,204.71799%20C19.6456403,203.571311%2019.6261529,202.179068%2020.2342955,201.014912%20L35.3027847,175.388229%20C30.1976229,171.128798%2024.3630321,167.829476%2018.0816541,165.65009%20L3.16692493,191.276772%20C0.0305635285,196.656417%20-0.818661742,203.068719%200.809210488,209.079324%20C2.43708272,215.08993%206.40620885,220.197261%2011.8287436,223.258872%20C15.3657216,225.251729%2019.3523095,226.310116%2023.4120041,226.334074%20L97.8831433,226.334074%20C100.696274,191.620878%2085.1423372,157.966047%2056.8804514,137.614499%20L68.7199787,117.113153%20C104.398813,141.618242%20124.473737,183.151896%20121.510945,226.334074%20L184.603837,226.334074%20C187.593899,160.904124%20155.557278,98.8221906%20100.497065,63.3483734%20L124.432386,22.3456815%20C125.542508,20.4856859%20127.944329,19.8680747%20129.81399,20.9618406%20C132.530418,22.4481882%20233.807067,199.169791%20235.703442,201.219925%20C236.383476,202.439289%20236.358897,203.929352%20235.639016,205.125624%20C234.919136,206.321896%20233.614065,207.041397%20232.218213,207.011555%20L207.821611,207.011555%20C208.129131,213.537817%20208.129131,220.046994%20207.821611,226.539592%20L232.32072,226.539592%20C238.604421,226.580218%20244.643414,224.105731%20249.091568,219.667205%20C253.539722,215.228679%20256.027289,209.195062%20256,202.911286%20C256.002825,198.802186%20254.905596,194.767215%20252.822066,191.225519%20L148.367708,12.4025287%20Z'%20fill='black'/%3E%3C/svg%3E");
+    --orange-muted: rgba(31, 22, 51, 0.78);
+    --orange-hint: rgba(31, 22, 51, 0.58);
+    --orange-faint: rgba(31, 22, 51, 0.42);
+    --orange-border: rgba(31, 22, 51, 0.24);
+    --font-display: 'Rubik', sans-serif;
+    --font-mono: 'Rubik', sans-serif;
+    --ease-slide: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===========================================
+   RESET
+   Keep authored slide dimensions predictable.
+   =========================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+h1, h2, h3, p {
+    margin: 0;
+}
+
+button {
+    font: inherit;
+}
+
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   Slides are authored at 1920×1080 and scaled as a whole.
+   =========================================== */
+
+/* 1. Lock the browser viewport */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 2. Full-window deck viewport */
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 3. Fixed 16:9 design canvas.
+   JavaScript sets transform: translate(...) scale(...). */
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+
+/* 4. Slides stack inside the fixed stage.
+   Content must be laid out at 1920×1080, not reflowed per device. */
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--slide-bg, #fff);
+}
+
+.slide.active,
+.slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+
+/* 5. Keep media inside authored slide bounds */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 6. Presentation chrome stays outside the slide design system */
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+/* 7. Print one fixed-size slide per page */
+@media print {
+    html,
+    body {
+        width: 1920px;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-viewport {
+        position: static;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-stage {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none !important;
+        background: none;
+    }
+
+    .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
+    .deck-controls {
+        display: none !important;
+    }
+}
+
+/* 8. Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* ===========================================
+   BROADSIDE BASE
+   Defines the ink-on-fire slide language.
+   =========================================== */
+body {
+    font-family: var(--font-display);
+    color: var(--cream);
+}
+
+.slide {
+    padding: 64px 96px 86px;
+    background: var(--ink);
+}
+
+.slide::after {
+    content: "";
+    position: absolute;
+    right: 72px;
+    bottom: 72px;
+    width: 360px;
+    aspect-ratio: 256 / 227;
+    background: var(--cream);
+    opacity: .055;
+    pointer-events: none;
+    z-index: 0;
+    -webkit-mask: var(--sentry-glyph-mask) center / contain no-repeat;
+    mask: var(--sentry-glyph-mask) center / contain no-repeat;
+}
+
+.slide.orange {
+    background: var(--fire);
+    color: var(--ink);
+}
+
+.slide.orange::after {
+    background: var(--ink);
+    opacity: .1;
+}
+
+.cover::after {
+    right: 86px;
+    bottom: 96px;
+    width: 540px;
+    opacity: .14;
+}
+
+.slide-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.slide-chrome,
+.slide-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--cream-hint);
+}
+
+.slide-chrome {
+    top: 0;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.slide-foot {
+    bottom: 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.orange .slide-chrome,
+.orange .slide-foot {
+    color: var(--orange-faint);
+    border-color: var(--orange-border);
+}
+
+.kicker {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.orange .kicker {
+    color: var(--orange-hint);
+}
+
+.rule {
+    width: 36px;
+    height: 2px;
+    background: var(--fire);
+}
+
+.orange .rule {
+    background: var(--ink);
+}
+
+.catalogue-num {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    letter-spacing: .12em;
+    color: rgba(31,22,51,.45);
+}
+
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 118px;
+    bottom: 92px;
+}
+
+/* ===========================================
+   TYPOGRAPHY
+   Rubik carries the deck; the mono variable is retained for layout hooks.
+   =========================================== */
+.display {
+    font-size: 250px;
+    line-height: .84;
+    letter-spacing: -.045em;
+    font-weight: 900;
+}
+
+.chapter-title {
+    font-size: 170px;
+    line-height: .9;
+    letter-spacing: -.04em;
+    font-weight: 900;
+    max-width: 1280px;
+}
+
+.headline {
+    font-size: 104px;
+    line-height: 1.04;
+    letter-spacing: -.03em;
+    font-weight: 800;
+    max-width: 1320px;
+}
+
+.headline.small {
+    font-size: 84px;
+    max-width: 1200px;
+}
+
+.lead {
+    font-size: 36px;
+    line-height: 1.34;
+    font-weight: 500;
+    color: var(--cream);
+    max-width: 900px;
+}
+
+.muted {
+    color: var(--cream-muted);
+}
+
+.orange .lead,
+.orange .muted {
+    color: var(--orange-muted);
+}
+
+.accent {
+    color: var(--fire);
+}
+
+.orange .accent {
+    color: var(--ink);
+}
+
+/* ===========================================
+   REVEAL ANIMATIONS
+   Replays when a slide becomes visible.
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(34px);
+    transition: opacity .65s var(--ease-enter), transform .65s var(--ease-enter);
+}
+
+.visible .reveal {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.visible .delay-1 { transition-delay: .08s; }
+.visible .delay-2 { transition-delay: .18s; }
+.visible .delay-3 { transition-delay: .30s; }
+.visible .delay-4 { transition-delay: .42s; }
+.visible .delay-5 { transition-delay: .54s; }
+
+.word-mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: .08em;
+    margin-bottom: -.08em;
+}
+
+.word-mask > span {
+    display: block;
+    transform: translateY(110%);
+    transition: transform .85s var(--ease-enter);
+}
+
+.visible .word-mask > span {
+    transform: translateY(0);
+}
+
+.visible .word-mask.delay-2 > span { transition-delay: .12s; }
+.visible .word-mask.delay-3 > span { transition-delay: .24s; }
+
+.scroll-reveal {
+    display: block;
+    overflow: hidden;
+    padding-bottom: .1em;
+}
+
+.scroll-reveal > span {
+    display: block;
+    transform: translateY(115%);
+    transition: transform 1s var(--ease-slide);
+}
+
+.visible .scroll-reveal > span {
+    transform: translateY(0);
+}
+
+.visible .scroll-reveal.delay-1 > span { transition-delay: .12s; }
+
+/* ===========================================
+   SLIDE PATTERNS
+   Reusable layouts for speaker-led conference pacing.
+   =========================================== */
+.cover .masthead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--orange-faint);
+}
+
+.cover-title {
+    position: absolute;
+    left: 0;
+    bottom: 142px;
+    width: 1400px;
+}
+
+.cover .display {
+    font-size: 214px;
+    line-height: 1.02;
+}
+
+.cover .word-mask {
+    padding-bottom: .18em;
+    margin-bottom: -.12em;
+}
+
+.cover .word-mask > span {
+    line-height: 1.02;
+}
+
+.cover-sub {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 520px;
+    font-size: 31px;
+    line-height: 1.35;
+    font-weight: 500;
+    color: var(--orange-muted);
+    border-left: 3px solid var(--ink);
+    padding-left: 28px;
+}
+
+.statement {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.statement .headline {
+    max-width: 1440px;
+    font-size: 126px;
+}
+
+.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+    height: 100%;
+    align-items: center;
+}
+
+.split-left {
+    border-right: 1px solid var(--border);
+    padding-right: 64px;
+}
+
+.split-right {
+    padding-left: 10px;
+}
+
+.orange-panel {
+    background: var(--fire);
+    color: var(--ink);
+    margin: -118px -96px -92px 0;
+    padding: 118px 96px 92px 72px;
+    min-height: calc(100% + 210px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.log-lines {
+    font-family: var(--font-mono);
+    font-size: 21px;
+    line-height: 2.05;
+    color: var(--cream-hint);
+}
+
+.live-log {
+    height: 488px;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 22px 0;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 13%, #000 82%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 13%, #000 82%, transparent);
+}
+
+.log-track {
+    display: flex;
+    flex-direction: column;
+    animation: logWheel 13s linear infinite;
+    will-change: transform;
+}
+
+.live-log:hover .log-track {
+    animation-play-state: paused;
+}
+
+.log-set {
+    flex: 0 0 auto;
+}
+
+.log-line {
+    white-space: nowrap;
+}
+
+.log-line .lvl {
+    display: inline-block;
+    width: 64px;
+    color: var(--cream-muted);
+}
+
+.log-line.warn .lvl,
+.log-line.error .lvl {
+    color: var(--fire);
+}
+
+.log-line.debug {
+    color: var(--cream-hint);
+}
+
+.log-lines .err,
+.log-lines .warn {
+    color: var(--fire);
+}
+
+.bad-console {
+    margin-top: 38px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+    font-family: var(--font-mono);
+    font-size: 25px;
+    line-height: 1.55;
+    color: var(--cream-muted);
+}
+
+.bad-console .fn {
+    color: var(--fire);
+}
+
+.bad-console .str {
+    color: var(--cream);
+}
+
+.structure-compare {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+.structure-card {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 26px 0 28px;
+}
+
+.structure-card .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 17px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+}
+
+.structure-card pre {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 27px;
+    line-height: 1.42;
+    color: var(--cream-muted);
+    white-space: pre-wrap;
+}
+
+.structure-card.good {
+    border-color: var(--fire);
+}
+
+.structure-card.good pre {
+    color: var(--cream);
+}
+
+.console-modes {
+    margin-top: 42px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.console-mode {
+    min-height: 410px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.console-mode.good {
+    border-color: var(--fire);
+}
+
+.console-mode .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.console-mode pre {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--cream);
+    white-space: pre-wrap;
+}
+
+.console-mode p {
+    margin: auto 0 0;
+    padding-top: 26px;
+    font-size: 25px;
+    line-height: 1.32;
+    color: var(--cream-muted);
+}
+
+.console-mode.good p {
+    color: var(--cream);
+}
+
+.console-explainer .headline.small {
+    font-size: 76px;
+    line-height: 1.02;
+    max-width: 1540px;
+}
+
+.console-explainer .lead {
+    font-size: 32px;
+    max-width: 1180px;
+}
+
+.console-explainer .console-modes {
+    margin-top: 34px;
+}
+
+.console-explainer .console-mode {
+    min-height: 330px;
+    padding: 24px 0 22px;
+}
+
+.console-explainer .console-mode .label {
+    margin-bottom: 20px;
+}
+
+.console-explainer .console-mode pre {
+    font-size: 20px;
+    line-height: 1.34;
+}
+
+.console-explainer .console-mode p {
+    margin-top: 20px;
+    padding-top: 0;
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.circular-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 46px;
+    align-items: stretch;
+    margin-top: 42px;
+}
+
+.circular-card {
+    min-height: 472px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.circular-card.good {
+    border-color: var(--fire);
+}
+
+.circular-card .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.circular-card pre {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    line-height: 1.34;
+    color: var(--cream);
+    white-space: pre-wrap;
+}
+
+.circular-card .note {
+    margin-top: auto;
+    padding-top: 28px;
+    font-size: 28px;
+    line-height: 1.24;
+    color: var(--cream-muted);
+}
+
+.circular-card.good .note {
+    color: var(--cream);
+}
+
+.circular-explainer .headline.small {
+    font-size: 74px;
+    line-height: 1.01;
+    max-width: 1420px;
+}
+
+.circular-explainer .lead {
+    font-size: 32px;
+    max-width: 1240px;
+}
+
+.circular-explainer .circular-demo {
+    margin-top: 32px;
+}
+
+.circular-explainer .circular-card {
+    min-height: 368px;
+    padding: 24px 0 22px;
+}
+
+.circular-explainer .circular-card .label {
+    margin-bottom: 20px;
+}
+
+.circular-explainer .circular-card pre {
+    font-size: 21px;
+    line-height: 1.28;
+}
+
+.circular-explainer .circular-card .note {
+    padding-top: 22px;
+    font-size: 24px;
+    line-height: 1.22;
+}
+
+.schema-board {
+    margin-top: 44px;
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 56px;
+    align-items: stretch;
+}
+
+.schema-table {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+}
+
+.schema-row {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 28px;
+    align-items: center;
+    min-height: 64px;
+    border-bottom: 1px solid var(--border);
+}
+
+.schema-row:last-child {
+    border-bottom: 0;
+}
+
+.schema-key {
+    color: var(--fire);
+    letter-spacing: .08em;
+}
+
+.schema-value {
+    color: var(--cream-muted);
+}
+
+.query-benefits {
+    background: var(--fire);
+    color: var(--ink);
+    padding: 34px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.query-benefits .label {
+    font-family: var(--font-mono);
+    color: rgba(31,22,51,.58);
+    font-size: 17px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.query-benefits .big {
+    margin-top: 26px;
+    font-size: 66px;
+    line-height: .94;
+    letter-spacing: -.045em;
+    font-weight: 900;
+}
+
+.query-benefits .query-chip {
+    margin-top: 30px;
+    border-top: 1px solid rgba(31,22,51,.28);
+    padding-top: 22px;
+    font-family: var(--font-mono);
+    color: rgba(31,22,51,.78);
+    font-size: 22px;
+    line-height: 1.45;
+}
+
+.noise-visual {
+    display: grid;
+    grid-template-columns: 1fr 96px 1fr;
+    gap: 42px;
+    align-items: center;
+    margin-top: 54px;
+}
+
+.thin-stack,
+.rich-event {
+    min-height: 430px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 34px 0;
+}
+
+.thin-chip {
+    font-family: var(--font-mono);
+    color: var(--cream-hint);
+    font-size: 23px;
+    line-height: 1;
+    border-left: 2px solid var(--border);
+    padding: 18px 0 18px 22px;
+    margin-bottom: 12px;
+}
+
+.thin-chip:nth-child(3),
+.thin-chip:nth-child(5) {
+    color: var(--fire);
+}
+
+.noise-arrow {
+    font-size: 104px;
+    line-height: 1;
+    font-weight: 900;
+    color: var(--fire);
+    text-align: center;
+}
+
+.rich-event {
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 25px;
+    line-height: 1.5;
+    background:
+        linear-gradient(90deg, rgba(225,86,124,.18) 0 2px, transparent 2px),
+        linear-gradient(180deg, rgba(249,248,255,.04), transparent);
+    padding-left: 24px;
+}
+
+.json-object {
+    margin: 0;
+    white-space: pre;
+}
+
+.json-line {
+    display: block;
+}
+
+.json-brace {
+    color: var(--cream-hint);
+}
+
+.json-key {
+    color: var(--fire);
+}
+
+.json-string {
+    color: var(--cream);
+}
+
+.json-number {
+    color: var(--cream-muted);
+}
+
+.json-punctuation {
+    color: var(--cream-hint);
+}
+
+.principles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    margin-top: 54px;
+}
+
+.principle {
+    min-height: 300px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    position: relative;
+}
+
+.principle::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 44px;
+    height: 2px;
+    background: var(--fire);
+}
+
+.principle .num {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--fire);
+    letter-spacing: .12em;
+}
+
+.principle h3 {
+    margin-top: 28px;
+    font-size: 46px;
+    line-height: .98;
+    letter-spacing: -.03em;
+    font-weight: 900;
+}
+
+.principle p {
+    margin-top: 20px;
+    font-size: 24px;
+    line-height: 1.28;
+    color: var(--cream-muted);
+}
+
+.trace-map {
+    min-height: 450px;
+    margin-top: 30px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0 22px;
+}
+
+.trace-title {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+}
+
+.trace-detail {
+    height: 100%;
+}
+
+.trace-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 36px;
+    margin-bottom: 18px;
+}
+
+.trace-meta .trace-title {
+    margin-bottom: 10px;
+}
+
+.trace-id {
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 20px;
+}
+
+.trace-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.trace-chips span {
+    border: 1px solid var(--border);
+    color: var(--cream-muted);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1;
+    padding: 8px 10px;
+}
+
+.trace-timeline {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+}
+
+.span-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 86px;
+    gap: 20px;
+    align-items: center;
+    font-family: var(--font-mono);
+}
+
+.span-label {
+    color: var(--cream-muted);
+    font-size: 17px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.span-track {
+    min-width: 0;
+    height: 34px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid rgba(74,44,111,.5);
+    background:
+        repeating-linear-gradient(90deg, rgba(249,248,255,.045) 0 1px, transparent 1px 12.5%),
+        rgba(249,248,255,.018);
+}
+
+.span-bar {
+    height: 100%;
+    margin-left: calc(var(--start) * 1%);
+    width: calc(var(--width) * 1%);
+    border: 1px solid var(--border);
+    background: rgba(249,248,255,.035);
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+
+.span-row.hot .span-bar {
+    border-color: var(--fire);
+    background: rgba(225,86,124,.12);
+    box-shadow: 0 0 0 1px rgba(225,86,124,.08);
+}
+
+.visible .trace-map .span-bar {
+    animation: spanGrow var(--duration, 1s) linear var(--delay, .45s) both;
+}
+
+@keyframes spanGrow {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.span-time {
+    color: var(--cream-hint);
+    font-size: 17px;
+    text-align: right;
+}
+
+.attached-log {
+    margin: -2px 86px 0 170px;
+    border-left: 2px solid var(--fire);
+    padding: 12px 0 12px 22px;
+    font-family: var(--font-mono);
+    font-size: 19px;
+    line-height: 1.42;
+    color: var(--cream-muted);
+    background: linear-gradient(90deg, rgba(225,86,124,.08), transparent 70%);
+    opacity: 0;
+    transform: translateX(-18px);
+}
+
+.visible .trace-map .attached-log {
+    animation: logAttach .55s var(--ease-enter) 1.05s both;
+}
+
+.attached-log b {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--cream);
+    font-weight: 600;
+}
+
+.attached-log .key {
+    color: var(--fire);
+}
+
+@keyframes logAttach {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.trace-payoff {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.trace-payoff b {
+    color: var(--cream);
+    font-weight: 500;
+}
+
+.impl-diagram {
+    margin-top: 42px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.impl-step {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    min-height: 220px;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 20px;
+    line-height: 1.4;
+}
+
+.impl-step strong {
+    display: block;
+    margin-bottom: 26px;
+    font-family: var(--font-display);
+    color: var(--fire);
+    font-size: 44px;
+    line-height: .96;
+    letter-spacing: -.03em;
+    font-weight: 900;
+}
+
+.category-board {
+    margin-top: 42px;
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 56px;
+    align-items: stretch;
+}
+
+.category-tree {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 30px 0;
+    font-family: var(--font-mono);
+}
+
+.cat-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 24px;
+    align-items: center;
+    min-height: 76px;
+    color: var(--cream-muted);
+}
+
+.cat-depth {
+    color: var(--cream-hint);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+.cat-name {
+    font-size: 29px;
+    line-height: 1;
+}
+
+.cat-name .hot {
+    color: var(--fire);
+}
+
+.category-callout {
+    background: var(--fire);
+    color: var(--ink);
+    padding: 34px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.category-callout .label {
+    font-family: var(--font-mono);
+    color: rgba(31,22,51,.58);
+    font-size: 17px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.category-callout .big {
+    margin-top: 28px;
+    font-size: 72px;
+    line-height: .9;
+    letter-spacing: -.045em;
+    font-weight: 900;
+}
+
+.category-callout .query-chip {
+    margin-top: 34px;
+    border-top: 1px solid rgba(31,22,51,.28);
+    padding-top: 22px;
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.45;
+    color: rgba(31,22,51,.78);
+}
+
+.category-notes {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.category-note {
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 19px;
+    line-height: 1.35;
+}
+
+.category-note b {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--fire);
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+@keyframes logWheel {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-50%);
+    }
+}
+
+.big-stat {
+    font-size: 156px;
+    line-height: .9;
+    letter-spacing: -.05em;
+    font-weight: 900;
+    color: var(--fire);
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 54px;
+    margin-top: 72px;
+}
+
+.stat-card {
+    border-top: 1px solid var(--border);
+    padding-top: 30px;
+}
+
+.stat-card .value {
+    color: var(--fire);
+    font-size: 112px;
+    line-height: .94;
+    letter-spacing: -.045em;
+    font-weight: 900;
+}
+
+.stat-card p {
+    margin-top: 18px;
+    font-size: 28px;
+    line-height: 1.35;
+    color: var(--cream-muted);
+}
+
+.quote-mark {
+    color: var(--fire);
+    font-size: 210px;
+    line-height: .5;
+    font-weight: 900;
+}
+
+.quote-text {
+    font-size: 82px;
+    line-height: 1.08;
+    letter-spacing: -.025em;
+    font-weight: 800;
+    max-width: 1260px;
+}
+
+.quote-attr {
+    margin-top: 52px;
+    font-family: var(--font-mono);
+    font-size: 19px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--cream-hint);
+}
+
+.slash-list {
+    list-style: none;
+    padding: 0;
+    margin: 54px 0 0;
+    max-width: 980px;
+}
+
+.slash-list li {
+    position: relative;
+    padding-left: 52px;
+    margin: 0 0 26px;
+    font-size: 43px;
+    line-height: 1.18;
+    font-weight: 600;
+}
+
+.slash-list li::before {
+    content: "/";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-weight: 700;
+}
+
+.orange .slash-list li::before {
+    color: var(--orange-faint);
+}
+
+.query-map {
+    display: grid;
+    gap: 24px;
+}
+
+.question-card {
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+}
+
+.question-card .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.question-card h3 {
+    font-size: 39px;
+    line-height: 1.06;
+    letter-spacing: -.03em;
+    font-weight: 800;
+}
+
+.field-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.field-chips code {
+    border: 1px solid var(--border);
+    color: var(--cream-muted);
+    font-family: var(--font-mono);
+    font-size: 18px;
+    line-height: 1;
+    padding: 9px 11px;
+}
+
+.question-card.hot {
+    border-color: var(--fire);
+}
+
+.question-card.hot h3,
+.question-card.hot .field-chips code {
+    color: var(--cream);
+}
+
+.term-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 44px 68px;
+    margin-top: 58px;
+}
+
+.term {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+}
+
+.term h3 {
+    font-size: 48px;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    font-weight: 800;
+    color: var(--cream);
+}
+
+.term p {
+    margin-top: 14px;
+    font-size: 27px;
+    line-height: 1.33;
+    color: var(--cream-muted);
+}
+
+.event-card {
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+    font-family: var(--font-mono);
+    font-size: 21px;
+    line-height: 1.62;
+    color: var(--cream-muted);
+}
+
+.event-card .key {
+    color: var(--fire);
+}
+
+.event-card .val {
+    color: var(--cream);
+}
+
+.json-context-demo {
+    display: grid;
+    grid-template-columns: .86fr 1.14fr;
+    gap: 34px;
+    align-items: stretch;
+}
+
+.json-pane {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0;
+}
+
+.json-pane.enriched {
+    border-color: var(--fire);
+}
+
+.json-pane .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 15px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.json-pane pre {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 19px;
+    line-height: 1.38;
+    color: var(--cream-muted);
+    white-space: pre-wrap;
+}
+
+.json-pane.enriched pre {
+    color: var(--cream);
+}
+
+.json-comment {
+    color: var(--cream-hint);
+}
+
+.json-context-key {
+    color: var(--fire);
+}
+
+.json-context-note {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 15px;
+    color: var(--cream-muted);
+    font-size: 21px;
+    line-height: 1.28;
+}
+
+.logtape-context-demo {
+    display: grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 46px;
+    align-items: stretch;
+    margin-top: 42px;
+}
+
+.context-code-card,
+.context-result-card {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+}
+
+.context-code-card {
+    font-family: var(--font-mono);
+}
+
+.context-code-card .label,
+.context-result-card .label {
+    color: var(--fire);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+}
+
+.context-code-card pre {
+    margin: 0;
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 22px;
+    line-height: 1.42;
+    white-space: pre-wrap;
+}
+
+.context-result-card {
+    border-color: var(--fire);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.context-result-card h3 {
+    margin: 0;
+    font-size: 54px;
+    line-height: .94;
+    letter-spacing: -.045em;
+    font-weight: 900;
+}
+
+.context-result-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 30px;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 20px;
+}
+
+.context-result-list div {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+.context-result-list b {
+    color: var(--cream);
+    font-weight: 500;
+}
+
+.query {
+    margin-top: 54px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 0;
+    font-family: var(--font-mono);
+    font-size: 31px;
+    line-height: 1.45;
+    color: var(--cream);
+}
+
+.query .key {
+    color: var(--fire);
+}
+
+.query-workflow {
+    margin-top: 38px;
+    display: grid;
+    grid-template-columns: 1.04fr .96fr;
+    gap: 42px;
+    align-items: stretch;
+}
+
+.explorer-panel {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 30px;
+}
+
+.explorer-panel .label,
+.action-card .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.query-line {
+    margin-top: 22px;
+    font-family: var(--font-mono);
+    font-size: 29px;
+    line-height: 1.42;
+    color: var(--cream);
+}
+
+.query-line .key {
+    color: var(--fire);
+}
+
+.mini-chart {
+    margin-top: 34px;
+}
+
+.chart-title {
+    font-family: var(--font-mono);
+    color: var(--cream);
+    font-size: 22px;
+    margin-bottom: 18px;
+}
+
+.bar-row {
+    height: 132px;
+    display: grid;
+    grid-template-columns: repeat(28, 1fr);
+    gap: 5px;
+    align-items: end;
+    border-bottom: 1px solid var(--border);
+    background: repeating-linear-gradient(180deg, transparent 0 31px, rgba(249,248,255,.04) 31px 32px);
+}
+
+.bar-row span {
+    display: block;
+    height: calc(var(--h) * 1%);
+    min-height: 16px;
+    background: var(--fire);
+    opacity: .88;
+}
+
+.chart-note {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.query-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.action-card {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    min-height: 116px;
+}
+
+.action-card.hot {
+    border-color: var(--fire);
+}
+
+.action-card h3 {
+    margin: 14px 0 8px;
+    font-size: 42px;
+    line-height: .98;
+    letter-spacing: -.035em;
+    font-weight: 900;
+}
+
+.action-card p {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.32;
+    color: var(--cream-muted);
+}
+
+.code-frame {
+    margin-top: 52px;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    line-height: 1.52;
+    color: var(--cream-muted);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 30px 0;
+    max-width: 1040px;
+}
+
+.code-frame .hot {
+    color: var(--fire);
+}
+
+.sampling {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 70px;
+    align-items: end;
+}
+
+.keep-stack {
+    border-left: 1px solid var(--border);
+    padding-left: 42px;
+}
+
+.keep {
+    font-size: 48px;
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    font-weight: 800;
+    margin-bottom: 34px;
+}
+
+.keep span {
+    color: var(--fire);
+}
+
+.routing-board {
+    position: relative;
+    display: grid;
+    grid-template-columns: 410px 180px 1fr;
+    gap: 30px;
+    align-items: stretch;
+    margin-top: 26px;
+    min-height: 330px;
+}
+
+.level-stack,
+.sink-stack {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.level-token,
+.sink-card {
+    border-top: 1px solid var(--border);
+}
+
+.level-token:last-child,
+.sink-card:last-child {
+    border-bottom: 1px solid var(--border);
+}
+
+.level-token {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    align-items: center;
+    min-height: 64px;
+    font-family: var(--font-mono);
+}
+
+.level-token .label {
+    color: var(--fire);
+    font-size: 20px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.level-token .hint {
+    color: var(--cream-muted);
+    font-size: 17px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.route-hub {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 10px;
+    font-family: var(--font-mono);
+}
+
+.route-row {
+    display: grid;
+    grid-template-columns: 1fr 48px 1fr;
+    align-items: center;
+    color: var(--cream-hint);
+    font-size: 16px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.route-row::before,
+.route-row::after {
+    content: "";
+    height: 1px;
+    background: var(--border);
+}
+
+.route-row .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--fire);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.route-row.hot::before,
+.route-row.hot::after {
+    background: var(--fire);
+}
+
+.sink-card.console {
+    align-self: stretch;
+}
+
+.sink-card.sentry {
+    grid-row: 2 / 5;
+    min-height: 210px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-color: var(--fire);
+}
+
+.sink-card {
+    min-height: 64px;
+    padding: 12px 0 10px;
+}
+
+.sink-card h3 {
+    font-size: 44px;
+    line-height: .95;
+    letter-spacing: -.03em;
+    font-weight: 900;
+    color: var(--cream);
+}
+
+.sink-card p {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    color: var(--cream-muted);
+    font-size: 16px;
+    line-height: 1.28;
+}
+
+.sink-card .levels {
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sink-card .levels span {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 16px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.misconception {
+    display: grid;
+    grid-template-columns: 510px 1fr;
+    gap: 80px;
+    align-items: center;
+}
+
+.myth {
+    font-size: 98px;
+    line-height: .95;
+    letter-spacing: -.04em;
+    font-weight: 900;
+    color: var(--cream-muted);
+}
+
+.truth {
+    font-size: 74px;
+    line-height: 1.02;
+    letter-spacing: -.035em;
+    font-weight: 800;
+}
+
+.truth .accent {
+    display: block;
+}
+
+.payoff {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100%;
+}
+
+.payoff > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 62px;
+}
+
+.payoff > div + div {
+    border-left: 1px solid var(--orange-border);
+    padding-left: 72px;
+    padding-right: 0;
+}
+
+.payoff h3 {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--orange-hint);
+    margin-bottom: 32px;
+}
+
+.payoff p {
+    font-size: 62px;
+    line-height: 1.02;
+    letter-spacing: -.03em;
+    font-weight: 800;
+}
+
+.end-title {
+    position: absolute;
+    left: 0;
+    top: 206px;
+    font-size: 164px;
+    line-height: .9;
+    letter-spacing: -.05em;
+    font-weight: 900;
+    max-width: 1720px;
+}
+
+.end-meta {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-family: var(--font-mono);
+    font-size: 21px;
+    line-height: 1.7;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--orange-hint);
+}
+
+.thanks-layout {
+    position: absolute;
+    inset: 136px 0 0;
+    display: grid;
+    grid-template-columns: 1fr 660px;
+    gap: 80px;
+    align-items: end;
+}
+
+.thanks-copy {
+    align-self: start;
+}
+
+.thanks-title {
+    font-size: 156px;
+    line-height: .88;
+    letter-spacing: -.055em;
+    font-weight: 900;
+    max-width: 960px;
+}
+
+.thanks-note {
+    margin-top: 34px;
+    max-width: 820px;
+    font-size: 38px;
+    line-height: 1.08;
+    letter-spacing: -.025em;
+    font-weight: 700;
+    color: var(--orange-muted);
+}
+
+.resource-stack {
+    display: grid;
+    gap: 22px;
+}
+
+.resource-card {
+    display: grid;
+    grid-template-columns: 178px 1fr;
+    gap: 24px;
+    align-items: center;
+    min-height: 214px;
+    padding: 22px;
+    border: 1px solid var(--orange-border);
+    background: rgba(31, 22, 51, .08);
+}
+
+.resource-card img {
+    width: 178px;
+    height: 178px;
+    padding: 10px;
+    background: var(--cream);
+    border: 1px solid var(--orange-border);
+}
+
+.resource-card h3 {
+    font-size: 38px;
+    line-height: .96;
+    letter-spacing: -.035em;
+    font-weight: 900;
+}
+
+.resource-card p {
+    margin-top: 12px;
+    color: var(--orange-muted);
+    font-size: 21px;
+    line-height: 1.22;
+    font-weight: 700;
+}
+
+.resource-card a {
+    display: block;
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.3;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    word-break: break-word;
+}
+
+/* ===========================================
+   NAVIGATION UI
+   Minimal controls live outside the slide canvas.
+   =========================================== */
+.nav-ui {
+    position: fixed;
+    right: 26px;
+    bottom: 22px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .12em;
+    color: rgba(249,248,255,.55);
+    text-transform: uppercase;
+}
+
+.progress {
+    width: 148px;
+    height: 2px;
+    background: rgba(249,248,255,.18);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    background: var(--fire);
+    transition: width .45s var(--ease-slide);
+}
+
+/* ===========================================
+   INLINE EDITING
+   Hover the top-left corner or press E to edit text.
+   =========================================== */
+.edit-hotzone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 90px;
+    height: 90px;
+    z-index: 10000;
+}
+
+.edit-toggle,
+.save-copy {
+    position: fixed;
+    left: 18px;
+    z-index: 10001;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease, background .25s ease;
+    border: 1px solid rgba(249,248,255,.35);
+    background: rgba(31,22,51,.9);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+.edit-toggle {
+    top: 18px;
+}
+
+.save-copy {
+    top: 62px;
+}
+
+.edit-toggle.show,
+.edit-toggle.active,
+.save-copy.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.edit-toggle.active {
+    background: var(--fire);
+    color: var(--ink);
+}
+
+[contenteditable="true"] {
+    outline: 2px dashed rgba(225,86,124,.7);
+    outline-offset: 6px;
+}
+
+.edit-toast {
+    position: fixed;
+    left: 18px;
+    top: 110px;
+    z-index: 10002;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .25s ease, transform .25s ease;
+    background: rgba(31,22,51,.92);
+    border: 1px solid rgba(249,248,255,.2);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 10px 12px;
+}
+
+.edit-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage" aria-label="Logging the Right Way slide deck">
+
+<section class="slide orange cover active visible" data-title="Logging the right way">
+  <div class="slide-inner">
+    <div class="masthead reveal">
+      <span>the observability broadside / no. 01</span>
+      <span>Kyle Tryon · Sentry</span>
+    </div>
+    <div class="cover-title">
+      <h1 class="display" data-editable><span class="word-mask"><span>logging</span></span><span class="word-mask delay-2"><span>the right way</span></span></h1>
+    </div>
+    <p class="cover-sub reveal delay-4" data-editable>From noisy breadcrumbs to trace-connected structured events.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Console log breaks">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>the core problem</span><span>02 / 17</span></div>
+    <div class="content split">
+      <div class="split-left">
+        <div class="kicker reveal">console.log stops scaling</div>
+        <h2 class="headline small scroll-reveal delay-1" data-editable><span>bad console logs feel helpful until production starts talking over itself.</span></h2>
+        <div class="bad-console reveal delay-2" aria-label="bad console log examples">
+          <div><span class="fn">console.log</span>(<span class="str">"here"</span>)</div>
+          <div><span class="fn">console.log</span>(<span class="str">"payment failed"</span>)</div>
+          <div><span class="fn">console.log</span>(<span class="str">"why is this undefined"</span>)</div>
+        </div>
+      </div>
+      <div class="split-right log-lines live-log reveal delay-3" id="badLogStream" aria-label="animated incoming log stream">
+        <div class="log-track">
+          <div class="log-set">
+            <div class="log-line"><span class="lvl">INFO</span> user user_1 logged in</div>
+            <div class="log-line"><span class="lvl">INFO</span> order failed ord_5521</div>
+            <div class="log-line"><span class="lvl">INFO</span> user user_2 logged in</div>
+            <div class="log-line warn"><span class="lvl">WARN</span> cart cleared user_1</div>
+            <div class="log-line debug"><span class="lvl">debug</span> applying discount</div>
+            <div class="log-line error"><span class="lvl">ERROR</span> payment timeout</div>
+            <div class="log-line"><span class="lvl">info</span> request completed status=200</div>
+            <div class="log-line"><span class="lvl">INFO</span> checkout started</div>
+            <div class="log-line debug"><span class="lvl">debug</span> payload parsed bytes=1842</div>
+            <div class="log-line warn"><span class="lvl">WARN</span> retrying gateway attempt=2</div>
+            <div class="log-line"><span class="lvl">INFO</span> user user_3 logged in</div>
+            <div class="log-line error"><span class="lvl">ERROR</span> undefined is not an object</div>
+          </div>
+          <div class="log-set" aria-hidden="true">
+            <div class="log-line"><span class="lvl">INFO</span> user user_1 logged in</div>
+            <div class="log-line"><span class="lvl">INFO</span> order failed ord_5521</div>
+            <div class="log-line"><span class="lvl">INFO</span> user user_2 logged in</div>
+            <div class="log-line warn"><span class="lvl">WARN</span> cart cleared user_1</div>
+            <div class="log-line debug"><span class="lvl">debug</span> applying discount</div>
+            <div class="log-line error"><span class="lvl">ERROR</span> payment timeout</div>
+            <div class="log-line"><span class="lvl">info</span> request completed status=200</div>
+            <div class="log-line"><span class="lvl">INFO</span> checkout started</div>
+            <div class="log-line debug"><span class="lvl">debug</span> payload parsed bytes=1842</div>
+            <div class="log-line warn"><span class="lvl">WARN</span> retrying gateway attempt=2</div>
+            <div class="log-line"><span class="lvl">INFO</span> user user_3 logged in</div>
+            <div class="log-line error"><span class="lvl">ERROR</span> undefined is not an object</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>thin text logs</span><span>no shared request story</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="The scale problem">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>volume without meaning</span><span>03 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">the log dump</div>
+      <h2 class="headline small reveal delay-1" data-editable>replace many thin breadcrumbs with one rich milestone.</h2>
+      <div class="noise-visual">
+        <div class="thin-stack reveal delay-2" aria-label="thin log examples">
+          <div class="thin-chip">checkout started</div>
+          <div class="thin-chip">validating cart</div>
+          <div class="thin-chip">applying discount</div>
+          <div class="thin-chip">calling gateway</div>
+          <div class="thin-chip">payment successful</div>
+        </div>
+        <div class="noise-arrow reveal delay-3">→</div>
+        <div class="rich-event reveal delay-4" aria-label="rich milestone event">
+          <pre class="json-object"><span class="json-brace">{</span>
+  <span class="json-key">"event"</span><span class="json-punctuation">:</span> <span class="json-string">"Purchase Completed"</span><span class="json-punctuation">,</span>
+  <span class="json-key">"orderId"</span><span class="json-punctuation">:</span> <span class="json-string">"ord_5521"</span><span class="json-punctuation">,</span>
+  <span class="json-key">"userId"</span><span class="json-punctuation">:</span> <span class="json-string">"user_987"</span><span class="json-punctuation">,</span>
+  <span class="json-key">"cartTotal"</span><span class="json-punctuation">:</span> <span class="json-number">125.50</span><span class="json-punctuation">,</span>
+  <span class="json-key">"discountCode"</span><span class="json-punctuation">:</span> <span class="json-string">"SAVE20"</span><span class="json-punctuation">,</span>
+  <span class="json-key">"latencyMs"</span><span class="json-punctuation">:</span> <span class="json-number">850</span>
+<span class="json-brace">}</span></pre>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>more lines is not more signal</span><span>03 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide console-explainer" data-title="Devtools is not telemetry">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>object, JSON, record</span><span>04 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">console is not one format</div>
+      <h2 class="headline small reveal delay-1" data-editable>Console can log objects. JSON is text. Telemetry is a record.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Devtools inspection is not the same as structured telemetry.</p>
+      <div class="console-modes reveal delay-3">
+        <div class="console-mode">
+          <div class="label">object / reference</div>
+          <pre>console.log(user)
+
+// expandable object
+// runtime view
+// not a field contract</pre>
+          <p>Useful while debugging. Devtools can inspect actual objects or references, and behavior varies by runtime.</p>
+        </div>
+        <div class="console-mode">
+          <div class="label">JSON text</div>
+          <pre>console.log(JSON.stringify({
+  userId,
+  orderId,
+  latencyMs
+}))</pre>
+          <p>More portable than an object dump, but still just text unless the pipeline parses and indexes the fields.</p>
+        </div>
+        <div class="console-mode good">
+          <div class="label">telemetry record</div>
+          <pre>logger.info("checkout.completed", {
+  userId: user.id,
+  orderId: cart.orderId,
+  latencyMs,
+  status: response.status
+})</pre>
+          <p>A named event with known keys. Sentry can filter it, correlate it, and keep it attached to the trace.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>inspect locally, query later</span><span>04 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide circular-explainer" data-title="Field boundary">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>choose the boundary</span><span>05 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">field boundary beats object dump</div>
+      <h2 class="headline small reveal delay-1" data-editable>telemetry should stop at the facts you choose.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Objects are runtime graphs. Logs are contracts. Pick scalar fields and leave traversal out of the pipeline.</p>
+      <div class="circular-demo reveal delay-3">
+        <div class="circular-card">
+          <div class="label">unbounded graph</div>
+          <pre>const cart = { id: "cart_9" }
+cart.self = cart
+
+console.log(cart)
+// inspectable in devtools
+
+JSON.stringify(cart)
+// TypeError: circular structure</pre>
+          <div class="note">The runtime object can contain cycles, references, and accidental private detail.</div>
+        </div>
+        <div class="circular-card good">
+          <div class="label">chosen field boundary</div>
+          <pre>logger.info("cart.checked_out", {
+  cartId: cart.id,
+  userId: user.id,
+  totalCents,
+  itemCount
+})
+// no graph traversal</pre>
+          <div class="note">The logger reads four facts and stops. The boundary is intentional.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>field selection is design</span><span>05 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Known log structure">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>known shape, populated fields</span><span>06 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">schema is the contract</div>
+      <h2 class="headline small reveal delay-1" data-editable>known keys turn telemetry into a query surface.</h2>
+      <div class="schema-board reveal delay-2">
+        <div class="schema-table" aria-label="known log fields">
+          <div class="schema-row"><div class="schema-key">event</div><div class="schema-value">checkout.completed</div></div>
+          <div class="schema-row"><div class="schema-key">category</div><div class="schema-value">checkout.payment</div></div>
+          <div class="schema-row"><div class="schema-key">userId</div><div class="schema-value">user_987</div></div>
+          <div class="schema-row"><div class="schema-key">orderId</div><div class="schema-value">ord_5521</div></div>
+          <div class="schema-row"><div class="schema-key">latencyMs</div><div class="schema-value">850</div></div>
+          <div class="schema-row"><div class="schema-key">traceId</div><div class="schema-value">9f4e7c2a</div></div>
+        </div>
+        <div class="query-benefits">
+          <div class="label">Sentry query surface</div>
+          <div class="big">filter by keys, not guesses</div>
+          <div class="query-chip">event:checkout.completed<br>latencyMs:&gt;2000<br>category:checkout.payment</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>consistent keys make fast questions possible</span><span>06 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide orange" data-title="Mental model">
+  <div class="slide-inner statement">
+    <div class="catalogue-num reveal">07 / the shift</div>
+    <div class="quote-mark reveal">“</div>
+    <h2 class="quote-text reveal delay-1" data-editable>Move from logging the process to logging the milestone.</h2>
+  </div>
+</section>
+
+<section class="slide" data-title="Useful log properties">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>what makes a log useful</span><span>08 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">four properties to design for</div>
+      <h2 class="headline small reveal delay-1" data-editable>a useful log is queryable, connected, specific, and contextual.</h2>
+      <div class="principles">
+        <div class="principle reveal delay-2"><div class="num">01</div><h3 data-editable>queryable</h3><p data-editable>fields your tools can filter.</p></div>
+        <div class="principle reveal delay-3"><div class="num">02</div><h3 data-editable>connected</h3><p data-editable>attached to the request trace.</p></div>
+        <div class="principle reveal delay-4"><div class="num">03</div><h3 data-editable>specific</h3><p data-editable>IDs and values that narrow scope.</p></div>
+        <div class="principle reveal delay-5"><div class="num">04</div><h3 data-editable>contextual</h3><p data-editable>release, user, env inherited once.</p></div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>the checklist before you emit</span><span>08 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Design logs from questions">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>query backwards</span><span>09 / 17</span></div>
+    <div class="content split">
+      <div class="split-left">
+        <div class="kicker reveal">start with the incident</div>
+        <h2 class="headline small reveal delay-1" data-editable>write the log that answers the question you will actually ask.</h2>
+        <p class="lead muted reveal delay-2" data-editable>Every field should earn its place by making a future filter, group, alert, or trace jump possible.</p>
+      </div>
+      <div class="split-right">
+        <div class="query-map reveal delay-3" aria-label="production questions mapped to useful log fields">
+          <div class="question-card hot">
+            <div class="label">question</div>
+            <h3 data-editable>Which checkout step got slow?</h3>
+            <div class="field-chips"><code>step</code><code>latencyMs</code><code>status</code><code>trace_id</code></div>
+          </div>
+          <div class="question-card">
+            <div class="label">question</div>
+            <h3 data-editable>Who was affected?</h3>
+            <div class="field-chips"><code>userId</code><code>orderId</code><code>release</code><code>environment</code></div>
+          </div>
+          <div class="question-card">
+            <div class="label">question</div>
+            <h3 data-editable>Should this wake someone up?</h3>
+            <div class="field-chips"><code>level</code><code>error.type</code><code>retryable</code><code>attempt</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>fields are decisions</span><span>09 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Event versus context">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>event versus context</span><span>10 / 17</span></div>
+    <div class="content split">
+      <div class="split-left">
+        <div class="kicker reveal">context is the carrying layer</div>
+        <h2 class="headline small reveal delay-1" data-editable>bind context once. emit smaller events.</h2>
+        <p class="lead muted reveal delay-2" data-editable>Every log inside the request keeps the trace, user, release, and environment without repeating them.</p>
+      </div>
+      <div class="split-right json-context-demo" aria-label="event payload enriched into a Sentry log record">
+        <div class="json-pane reveal delay-2">
+          <div class="label">what you emit</div>
+          <pre><span class="json-brace">{</span>
+  <span class="json-key">"event"</span>: <span class="json-string">"checkout.payment"</span>,
+  <span class="json-key">"orderId"</span>: <span class="json-string">"ord_5521"</span>,
+  <span class="json-key">"latencyMs"</span>: <span class="json-number">2438</span>,
+  <span class="json-key">"status"</span>: <span class="json-string">"warn"</span>
+<span class="json-brace">}</span></pre>
+          <div class="json-context-note">event-local fields only</div>
+        </div>
+        <div class="json-pane enriched reveal delay-3">
+          <div class="label">what Sentry stores</div>
+          <pre><span class="json-brace">{</span>
+  <span class="json-key">"event"</span>: <span class="json-string">"checkout.payment"</span>,
+  <span class="json-key">"orderId"</span>: <span class="json-string">"ord_5521"</span>,
+  <span class="json-key">"latencyMs"</span>: <span class="json-number">2438</span>,
+  <span class="json-context-key">"trace_id"</span>: <span class="json-string">"9f4e7c2a"</span>,
+  <span class="json-context-key">"user.id"</span>: <span class="json-string">"user_987"</span>,
+  <span class="json-context-key">"release"</span>: <span class="json-string">"web@2.8.1"</span>,
+  <span class="json-context-key">"environment"</span>: <span class="json-string">"production"</span>
+<span class="json-brace">}</span></pre>
+          <div class="json-context-note">context arrives from the active request</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>event-local fields, inherited context</span><span>10 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="LogTape context">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>LogTape context</span><span>11 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">put context on the scope</div>
+      <h2 class="headline small reveal delay-1" data-editable>LogTape lets request data travel with every log.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Use context for request/session scope. Keep each milestone explicit with stable keys.</p>
+      <div class="logtape-context-demo reveal delay-3">
+        <div class="context-code-card">
+          <div class="label">implicit request context</div>
+          <pre>withContext({
+  requestId,
+  userId: session.user.id,
+  release: "web@2.8.1"
+}, async () => {
+  const logger = getLogger(["checkout", "payment"])
+
+  logger.warn("checkout.payment.slow", {
+    event: "checkout.payment",
+    orderId,
+    latencyMs,
+    status: "warn"
+  })
+})</pre>
+        </div>
+        <div class="context-result-card">
+          <div class="label">every log inside gets both</div>
+          <h3 data-editable>inherited scope. explicit event.</h3>
+          <div class="context-result-list">
+            <div><b>inherited:</b> requestId, userId, release</div>
+            <div><b>event-local:</b> event, orderId, latencyMs, status</div>
+            <div><b>Sentry:</b> searchable fields attached to the trace</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>context follows the call stack</span><span>11 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Queryable categories">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>queryable categories</span><span>12 / 17</span></div>
+    <div class="content">
+      <div>
+        <div class="kicker reveal">LogTape + Sentry</div>
+        <h2 class="headline small reveal delay-1" data-editable>nested categories become Sentry filters.</h2>
+        <div class="category-board reveal delay-2">
+          <div class="category-tree" aria-label="nested LogTape category hierarchy">
+            <div class="cat-row"><div class="cat-depth">root</div><div class="cat-name">[]</div></div>
+            <div class="cat-row"><div class="cat-depth">app</div><div class="cat-name">[<span class="hot">"frontend"</span>]</div></div>
+            <div class="cat-row"><div class="cat-depth">module</div><div class="cat-name">["frontend", <span class="hot">"auth"</span>]</div></div>
+            <div class="cat-row"><div class="cat-depth">action</div><div class="cat-name">["frontend", "auth", <span class="hot">"login"</span>]</div></div>
+          </div>
+          <div class="category-callout">
+            <div class="label">Sentry query scope</div>
+            <div class="big">frontend.auth</div>
+            <div class="query-chip">category contains frontend.auth<br>severity:warn OR severity:error</div>
+          </div>
+        </div>
+        <div class="category-notes reveal delay-3">
+          <div class="category-note"><b>Sentry sink</b>getSentrySink() sends structured LogTape records into Sentry Logs.</div>
+          <div class="category-note"><b>verbosity control</b>set lowestLevel higher at the app root, lower for one noisy module.</div>
+          <div class="category-note"><b>child loggers</b>getLogger(["frontend"]).getChild("auth") scopes without repeating strings.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>name the records before you query them</span><span>12 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Trace-connected logs">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>trace-connected logs</span><span>13 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">Sentry connects the dots</div>
+      <h2 class="headline small reveal delay-1" data-editable>The log is useful because it lands inside the trace.</h2>
+      <div class="trace-map reveal delay-2" aria-label="trace-connected logging diagram">
+        <div class="trace-detail">
+          <div class="trace-meta">
+            <div>
+              <div class="trace-title">checkout trace waterfall</div>
+              <div class="trace-id">traceId=9f4e7c2a · transaction=/checkout</div>
+            </div>
+            <div class="trace-chips" aria-label="trace metadata">
+              <span>release web@2.8.1</span>
+              <span>user user_987</span>
+              <span>env production</span>
+            </div>
+          </div>
+          <div class="trace-timeline">
+            <div class="span-row browser">
+              <div class="span-label">browser</div>
+              <div class="span-track"><div class="span-bar" style="--start: 0; --width: 78; --delay: .45s; --duration: 1.85s;"></div></div>
+              <div class="span-time">620ms</div>
+            </div>
+            <div class="span-row api hot">
+              <div class="span-label">api</div>
+              <div class="span-track"><div class="span-bar" style="--start: 12; --width: 68; --delay: .72s; --duration: 1.55s;"></div></div>
+              <div class="span-time">540ms</div>
+            </div>
+            <div class="attached-log">
+              <b>log attached to api span</b>
+              <span class="key">event</span>=checkout.payment &nbsp; <span class="key">level</span>=warn &nbsp; <span class="key">orderId</span>=ord_5521<br>
+              <span class="key">latencyMs</span>=2438 &nbsp; <span class="key">gateway</span>=stripe &nbsp; <span class="key">attempt</span>=2
+            </div>
+            <div class="span-row gateway hot">
+              <div class="span-label">gateway</div>
+              <div class="span-track"><div class="span-bar" style="--start: 28; --width: 46; --delay: 1.08s; --duration: 1.05s;"></div></div>
+              <div class="span-time">368ms</div>
+            </div>
+            <div class="span-row db">
+              <div class="span-label">db</div>
+              <div class="span-track"><div class="span-bar" style="--start: 18; --width: 20; --delay: .86s; --duration: .46s;"></div></div>
+              <div class="span-time">93ms</div>
+            </div>
+            <div class="span-row queue">
+              <div class="span-label">queue</div>
+              <div class="span-track"><div class="span-bar" style="--start: 66; --width: 18; --delay: 1.88s; --duration: .42s;"></div></div>
+              <div class="span-time">44ms</div>
+            </div>
+          </div>
+          <div class="trace-payoff"><b>Result:</b>&nbsp; the warning sits exactly where it happened, with the slow downstream call still visible.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>logs attached to spans</span><span>13 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Querying production">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>from search to operations</span><span>14 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">Sentry Log Explorer</div>
+      <h2 class="headline small reveal delay-1" data-editable>the same query can debug, dashboard, and alert.</h2>
+      <div class="query-workflow reveal delay-2">
+        <div class="explorer-panel">
+          <div class="label">search by attributes</div>
+          <div class="query-line" data-editable>
+            event:checkout.completed<br>
+            <span class="key">latencyMs:&gt;2000</span> category:frontend.auth<br>
+            severity:warn environment:production
+          </div>
+          <div class="mini-chart" aria-label="count logs chart">
+            <div class="chart-title">count(logs)</div>
+            <div class="bar-row">
+              <span style="--h: 28"></span><span style="--h: 34"></span><span style="--h: 46"></span><span style="--h: 58"></span>
+              <span style="--h: 42"></span><span style="--h: 64"></span><span style="--h: 52"></span><span style="--h: 38"></span>
+              <span style="--h: 32"></span><span style="--h: 36"></span><span style="--h: 44"></span><span style="--h: 48"></span>
+              <span style="--h: 40"></span><span style="--h: 57"></span><span style="--h: 66"></span><span style="--h: 54"></span>
+              <span style="--h: 45"></span><span style="--h: 39"></span><span style="--h: 35"></span><span style="--h: 31"></span>
+              <span style="--h: 34"></span><span style="--h: 33"></span><span style="--h: 82"></span><span style="--h: 94"></span>
+              <span style="--h: 52"></span><span style="--h: 43"></span><span style="--h: 55"></span><span style="--h: 61"></span>
+            </div>
+            <div class="chart-note">volume tells you if this is one weird request or an operational trend.</div>
+          </div>
+        </div>
+        <div class="query-actions">
+          <div class="action-card hot">
+            <div class="label">investigate</div>
+            <h3 data-editable>open the log</h3>
+            <p data-editable>Jump from the matching record to its trace, spans, errors, and user context.</p>
+          </div>
+          <div class="action-card">
+            <div class="label">dashboard</div>
+            <h3 data-editable>track the trend</h3>
+            <p data-editable>Turn the query into a widget for checkout latency, warnings, or business events.</p>
+          </div>
+          <div class="action-card">
+            <div class="label">alert</div>
+            <h3 data-editable>wake up on signal</h3>
+            <p data-editable>Notify only when the structured query crosses an operational threshold.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>search once, operationalize the query</span><span>14 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Levels and sinks">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>routing policy</span><span>15 / 17</span></div>
+    <div class="content">
+      <div class="kicker reveal">after design comes routing</div>
+      <h2 class="headline small reveal delay-1" data-editable>keep debug local. send operational signal to Sentry.</h2>
+      <div class="routing-board reveal delay-2" aria-label="log levels routed to different sinks">
+        <div class="level-stack">
+          <div class="level-token"><div class="label">debug</div><div class="hint">dev-only detail</div></div>
+          <div class="level-token"><div class="label">info</div><div class="hint">business milestones</div></div>
+          <div class="level-token"><div class="label">warn</div><div class="hint">recoverable abnormal</div></div>
+          <div class="level-token"><div class="label">error</div><div class="hint">attention needed</div></div>
+        </div>
+        <div class="route-hub" aria-hidden="true">
+          <div class="route-row"><span class="arrow">→</span></div>
+          <div class="route-row hot"><span class="arrow">→</span></div>
+          <div class="route-row hot"><span class="arrow">→</span></div>
+          <div class="route-row hot"><span class="arrow">→</span></div>
+        </div>
+        <div class="sink-stack">
+          <div class="sink-card console"><h3>dev console</h3><p>debug locally; filter before production</p><div class="levels"><span>debug</span></div></div>
+          <div class="sink-card sentry"><h3>Sentry</h3><p>milestones, warnings, errors, alerts, dashboards</p><div class="levels"><span>info</span><span>warn</span><span>error</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>route by operational value</span><span>15 / 17</span></div>
+  </div>
+</section>
+
+<section class="slide orange" data-title="The payoff">
+  <div class="slide-inner">
+    <div class="payoff">
+      <div class="reveal">
+        <h3>instead of log spelunking</h3>
+        <p data-editable>tail a stream, skim thin messages, and piece the story together by hand.</p>
+      </div>
+      <div class="reveal delay-2">
+        <h3>you get operations intelligence</h3>
+        <p data-editable>open the Sentry issue, inspect the trace, query the milestone, dashboard the trend.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide orange" data-title="Thank you">
+  <div class="slide-inner">
+    <div class="catalogue-num reveal">17 / end</div>
+    <div class="thanks-layout">
+      <div class="thanks-copy">
+        <h2 class="thanks-title reveal delay-1" data-editable>thank you.</h2>
+        <p class="thanks-note reveal delay-2" data-editable>logs are not notes to yourself. they are operational interfaces.</p>
+        <div class="end-meta reveal delay-4" data-editable>logging the right way<br>milestones · context · queries · traces</div>
+      </div>
+      <div class="resource-stack reveal delay-3" aria-label="resources">
+        <div class="resource-card">
+          <img src="./assets/loggingsucks-qr.svg" alt="QR code for loggingsucks.com">
+          <div>
+            <h3 data-editable>Logging Sucks</h3>
+            <p data-editable>The essay that frames the problem: logs lie when they are noisy, vague, and unqueryable.</p>
+            <a href="https://loggingsucks.com/">loggingsucks.com</a>
+          </div>
+        </div>
+        <div class="resource-card">
+          <img src="./assets/sentry-logtape-qr.svg" alt="QR code for the LogTape and Sentry blog post">
+          <div>
+            <h3 data-editable>LogTape + Sentry</h3>
+            <p data-editable>The implementation path: structured logs connected to traces, spans, and Sentry queries.</p>
+            <a href="https://blog.sentry.io/trace-connected-structured-logging-with-logtape-and-sentry/">blog.sentry.io/logtape</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<div class="nav-ui" aria-hidden="true">
+  <span id="slideCounter">01 / 17</span>
+  <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="edit-hotzone" id="editHotzone" aria-hidden="true"></div>
+<button class="edit-toggle" id="editToggle" type="button" title="Edit mode (E)">edit</button>
+<button class="save-copy" id="saveCopy" type="button" title="Download edited HTML">save copy</button>
+<div class="edit-toast" id="editToast" role="status" aria-live="polite">saved</div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Handles stage scaling, navigation, touch, and wheel input.
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.stage = document.getElementById('deckStage');
+        this.counter = document.getElementById('slideCounter');
+        this.progress = document.getElementById('progressFill');
+        this.currentSlide = 0;
+        this.wheelLocked = false;
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.showSlide(0);
+    }
+
+    setupStageScale() {
+        const scale = () => {
+            const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            const x = (window.innerWidth - 1920 * factor) / 2;
+            const y = (window.innerHeight - 1080 * factor) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (event) => {
+            if (event.target && event.target.getAttribute('contenteditable') === 'true') return;
+            if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(event.key)) {
+                event.preventDefault();
+                this.next();
+            }
+            if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) {
+                event.preventDefault();
+                this.prev();
+            }
+            if (event.key === 'Home') this.showSlide(0);
+            if (event.key === 'End') this.showSlide(this.slides.length - 1);
+        });
+    }
+
+    setupTouchNav() {
+        let startX = 0;
+        let startY = 0;
+        this.stage.addEventListener('touchstart', (event) => {
+            startX = event.touches[0].clientX;
+            startY = event.touches[0].clientY;
+        }, { passive: true });
+        this.stage.addEventListener('touchend', (event) => {
+            const dx = event.changedTouches[0].clientX - startX;
+            const dy = event.changedTouches[0].clientY - startY;
+            if (Math.max(Math.abs(dx), Math.abs(dy)) < 45) {
+                this.next();
+                return;
+            }
+            if (Math.abs(dx) > Math.abs(dy)) {
+                dx < 0 ? this.next() : this.prev();
+            }
+        }, { passive: true });
+    }
+
+    setupWheelNav() {
+        window.addEventListener('wheel', (event) => {
+            if (this.wheelLocked || Math.abs(event.deltaY) < 35) return;
+            this.wheelLocked = true;
+            event.deltaY > 0 ? this.next() : this.prev();
+            window.setTimeout(() => { this.wheelLocked = false; }, 650);
+        }, { passive: true });
+    }
+
+    showSlide(index) {
+        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === this.currentSlide);
+            slide.classList.toggle('visible', i === this.currentSlide);
+        });
+        const displayNumber = String(this.currentSlide + 1).padStart(2, '0');
+        this.counter.textContent = `${displayNumber} / ${this.slides.length}`;
+        this.progress.style.width = `${((this.currentSlide + 1) / this.slides.length) * 100}%`;
+    }
+
+    next() {
+        this.showSlide(this.currentSlide + 1);
+    }
+
+    prev() {
+        this.showSlide(this.currentSlide - 1);
+    }
+}
+
+/* ===========================================
+   INLINE EDITOR
+   Saves text edits to localStorage and can download a new HTML copy.
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.key = 'logging-the-right-way-broadside-edits';
+        this.isActive = false;
+        this.editables = Array.from(document.querySelectorAll('[data-editable]'));
+        this.toggle = document.getElementById('editToggle');
+        this.saveCopy = document.getElementById('saveCopy');
+        this.toast = document.getElementById('editToast');
+        this.setupIds();
+        this.load();
+        this.setupControls();
+    }
+
+    setupIds() {
+        this.editables.forEach((element, index) => {
+            if (!element.id) element.id = `editable-${index}`;
+        });
+    }
+
+    setupControls() {
+        this.toggle.addEventListener('click', () => this.toggleEditMode());
+        this.saveCopy.addEventListener('click', () => this.downloadCopy());
+        document.addEventListener('keydown', (event) => {
+            if ((event.key === 'e' || event.key === 'E') && event.target.getAttribute('contenteditable') !== 'true') {
+                this.toggleEditMode();
+            }
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+                event.preventDefault();
+                this.save();
+            }
+        });
+        this.editables.forEach((element) => {
+            element.addEventListener('input', () => this.save());
+        });
+    }
+
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('editing', this.isActive);
+        this.toggle.classList.toggle('active', this.isActive);
+        this.toggle.classList.add('show');
+        this.saveCopy.classList.toggle('show', this.isActive);
+        this.editables.forEach((element) => {
+            element.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+        });
+    }
+
+    save() {
+        const payload = {};
+        this.editables.forEach((element) => {
+            payload[element.id] = element.innerHTML;
+        });
+        localStorage.setItem(this.key, JSON.stringify(payload));
+        this.showToast('saved');
+    }
+
+    load() {
+        try {
+            const payload = JSON.parse(localStorage.getItem(this.key) || '{}');
+            this.editables.forEach((element) => {
+                if (payload[element.id]) element.innerHTML = payload[element.id];
+            });
+        } catch {
+            localStorage.removeItem(this.key);
+        }
+    }
+
+    showToast(message) {
+        this.toast.textContent = message;
+        this.toast.classList.add('show');
+        window.clearTimeout(this.toastTimer);
+        this.toastTimer = window.setTimeout(() => this.toast.classList.remove('show'), 900);
+    }
+
+    downloadCopy() {
+        this.save();
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'logging-the-right-way-broadside-edited.html';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+/* ===========================================
+   EDIT BUTTON HOVER BEHAVIOR
+   Uses a delayed JS hover chain so the button does not disappear.
+   =========================================== */
+function setupEditHover(editor) {
+    const hotzone = document.getElementById('editHotzone');
+    const editToggle = document.getElementById('editToggle');
+    let hideTimeout = null;
+    const show = () => {
+        window.clearTimeout(hideTimeout);
+        editToggle.classList.add('show');
+    };
+    const hide = () => {
+        hideTimeout = window.setTimeout(() => {
+            if (!editor.isActive) editToggle.classList.remove('show');
+        }, 400);
+    };
+    hotzone.addEventListener('mouseenter', show);
+    hotzone.addEventListener('mouseleave', hide);
+    hotzone.addEventListener('click', () => editor.toggleEditMode());
+    editToggle.addEventListener('mouseenter', show);
+    editToggle.addEventListener('mouseleave', hide);
+}
+
+const presentation = new SlidePresentation();
+const editor = new InlineEditor();
+setupEditHover(editor);
+window.presentation = presentation;
+</script>
+</body>
+</html>
