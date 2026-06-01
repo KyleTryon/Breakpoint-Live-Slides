@@ -720,6 +720,246 @@ body {
     line-height: 1.25;
 }
 
+.library-pipeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 54px;
+    align-items: stretch;
+    margin-top: 42px;
+}
+
+.library-call {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+}
+
+.library-call .label,
+.library-feature .label,
+.logtape-code-card .label,
+.logtape-callout .label {
+    font-family: var(--font-mono);
+    color: var(--fire);
+    font-size: 15px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.library-call pre,
+.logtape-code-card pre {
+    margin: 0;
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 23px;
+    line-height: 1.42;
+    white-space: pre-wrap;
+}
+
+.library-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.library-feature {
+    min-height: 170px;
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+}
+
+.library-feature.hot {
+    border-color: var(--fire);
+}
+
+.library-feature h3 {
+    font-size: 39px;
+    line-height: .96;
+    letter-spacing: -.035em;
+    font-weight: 900;
+}
+
+.library-feature p {
+    margin-top: 14px;
+    color: var(--cream-muted);
+    font-size: 21px;
+    line-height: 1.25;
+}
+
+.library-compare {
+    margin-top: 38px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.library-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 1fr;
+    gap: 28px;
+    align-items: center;
+    min-height: 78px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+}
+
+.library-row:first-child {
+    border-top: 0;
+}
+
+.library-row.header {
+    min-height: 46px;
+    color: var(--cream-hint);
+    font-size: 13px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.library-row.hot {
+    border-color: var(--fire);
+}
+
+.library-row .name {
+    color: var(--cream);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+
+.library-row .fit,
+.library-row .tradeoff {
+    color: var(--cream-muted);
+    font-size: 20px;
+    line-height: 1.24;
+}
+
+.library-row.hot .name,
+.library-row.hot .fit {
+    color: var(--cream);
+}
+
+.library-choice {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.library-choice-card {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+}
+
+.library-choice-card.hot {
+    border-color: var(--fire);
+}
+
+.library-choice-card h3 {
+    font-size: 36px;
+    line-height: 1;
+    letter-spacing: -.035em;
+    font-weight: 900;
+}
+
+.library-choice-card p {
+    margin-top: 12px;
+    color: var(--cream-muted);
+    font-size: 22px;
+    line-height: 1.25;
+}
+
+.library-comparison-slide .headline.small {
+    font-size: 68px;
+    line-height: 1;
+    max-width: 1580px;
+}
+
+.library-comparison-slide .lead {
+    font-size: 29px;
+    max-width: 1320px;
+}
+
+.library-comparison-slide .library-compare {
+    margin-top: 24px;
+}
+
+.library-comparison-slide .library-row {
+    min-height: 54px;
+    gap: 24px;
+}
+
+.library-comparison-slide .library-row.header {
+    min-height: 38px;
+    font-size: 12px;
+}
+
+.library-comparison-slide .library-row .name {
+    font-size: 22px;
+}
+
+.library-comparison-slide .library-row .fit,
+.library-comparison-slide .library-row .tradeoff {
+    font-size: 17px;
+    line-height: 1.18;
+}
+
+.library-comparison-slide .library-choice {
+    margin-top: 18px;
+}
+
+.library-comparison-slide .library-choice-card {
+    padding-top: 16px;
+}
+
+.library-comparison-slide .library-choice-card h3 {
+    font-size: 30px;
+}
+
+.library-comparison-slide .library-choice-card p {
+    margin-top: 9px;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.logtape-intro-demo {
+    display: grid;
+    grid-template-columns: .92fr 1.08fr;
+    gap: 46px;
+    align-items: stretch;
+    margin-top: 42px;
+}
+
+.logtape-code-card,
+.logtape-callouts {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+}
+
+.logtape-callouts {
+    display: grid;
+    gap: 16px;
+}
+
+.logtape-callout {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 20px;
+    align-items: baseline;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+}
+
+.logtape-callout:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.logtape-callout p {
+    color: var(--cream-muted);
+    font-size: 24px;
+    line-height: 1.24;
+}
+
 .circular-demo {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2232,7 +2472,7 @@ body {
 
 <section class="slide" data-title="Console log breaks">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>the core problem</span><span>02 / 17</span></div>
+    <div class="slide-chrome"><span>the core problem</span><span>02 / 19</span></div>
     <div class="content split">
       <div class="split-left">
         <div class="kicker reveal">console.log stops scaling</div>
@@ -2282,7 +2522,7 @@ body {
 
 <section class="slide" data-title="The scale problem">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>volume without meaning</span><span>03 / 17</span></div>
+    <div class="slide-chrome"><span>volume without meaning</span><span>03 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">the log dump</div>
       <h2 class="headline small reveal delay-1" data-editable>replace many thin breadcrumbs with one rich milestone.</h2>
@@ -2307,13 +2547,13 @@ body {
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>more lines is not more signal</span><span>03 / 17</span></div>
+    <div class="slide-foot"><span>more lines is not more signal</span><span>03 / 19</span></div>
   </div>
 </section>
 
 <section class="slide console-explainer" data-title="Devtools is not telemetry">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>object, JSON, record</span><span>04 / 17</span></div>
+    <div class="slide-chrome"><span>object, JSON, record</span><span>04 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">console is not one format</div>
       <h2 class="headline small reveal delay-1" data-editable>Console can log objects. JSON is text. Telemetry is a record.</h2>
@@ -2349,13 +2589,71 @@ body {
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>inspect locally, query later</span><span>04 / 17</span></div>
+    <div class="slide-foot"><span>inspect locally, query later</span><span>04 / 19</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Why a logging library">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>why a logging library</span><span>05 / 19</span></div>
+    <div class="content">
+      <div class="kicker reveal">the missing abstraction</div>
+      <h2 class="headline small reveal delay-1" data-editable>a logging library turns output into a contract.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Console writes bytes. A logger gives every record a name, level, fields, context, and destination.</p>
+      <div class="library-pipeline reveal delay-3" aria-label="logging library capabilities">
+        <div class="library-call">
+          <div class="label">one call, five decisions</div>
+          <pre>logger.warn("checkout.payment.slow", {
+  orderId,
+  latencyMs,
+  gateway: "stripe"
+})</pre>
+        </div>
+        <div class="library-features">
+          <div class="library-feature hot"><div class="label">logger</div><h3 data-editable>where it came from</h3><p data-editable>Category and source become part of the record.</p></div>
+          <div class="library-feature"><div class="label">level</div><h3 data-editable>how much it matters</h3><p data-editable>Debug, info, warn, and error become routing policy.</p></div>
+          <div class="library-feature"><div class="label">fields + context</div><h3 data-editable>what you can query</h3><p data-editable>Event facts stay explicit while request context travels with it.</p></div>
+          <div class="library-feature"><div class="label">sink</div><h3 data-editable>where it should go</h3><p data-editable>Console in development. Sentry when it needs operations value.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>output is easy. policy is the point.</span><span>05 / 19</span></div>
+  </div>
+</section>
+
+<section class="slide library-comparison-slide" data-title="JavaScript logging libraries">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>pick a real interface</span><span>06 / 19</span></div>
+    <div class="content">
+      <div class="kicker reveal">the ecosystem</div>
+      <h2 class="headline small reveal delay-1" data-editable>there are many good loggers. choose by runtime and routing needs.</h2>
+      <p class="lead muted reveal delay-2" data-editable>The decision is less about brand and more about adopting structured output, filtering, context, and sinks.</p>
+      <div class="library-compare reveal delay-3" aria-label="JavaScript logging library comparison">
+        <div class="library-row header"><div>library</div><div>best fit</div><div>tradeoff</div></div>
+        <div class="library-row"><div class="name">Pino</div><div class="fit">fast Node backends</div><div class="tradeoff">Node-focused, browser via polyfill</div></div>
+        <div class="library-row"><div class="name">Winston</div><div class="fit">mature transport ecosystem</div><div class="tradeoff">larger, more dependencies</div></div>
+        <div class="library-row"><div class="name">Bunyan</div><div class="fit">existing JSON logger codebases</div><div class="tradeoff">older, less active for new work</div></div>
+        <div class="library-row hot"><div class="name">LogTape</div><div class="fit">Node, browser, edge, libraries</div><div class="tradeoff">newer ecosystem</div></div>
+        <div class="library-row"><div class="name">Sentry logger</div><div class="fit">already using Sentry SDKs</div><div class="tradeoff">Sentry-specific</div></div>
+      </div>
+      <div class="library-choice reveal delay-4">
+        <div class="library-choice-card">
+          <h3 data-editable>any of these can be the right choice.</h3>
+          <p data-editable>The important shift is moving from strings to a logging interface.</p>
+        </div>
+        <div class="library-choice-card hot">
+          <h3 data-editable>my choice: LogTape.</h3>
+          <p data-editable>Runtime agnostic, Sentry-ready, with strong primitives for categories, context, and sinks.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>choose the logger that fits the runtime</span><span>06 / 19</span></div>
   </div>
 </section>
 
 <section class="slide circular-explainer" data-title="Field boundary">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>choose the boundary</span><span>05 / 17</span></div>
+    <div class="slide-chrome"><span>choose the boundary</span><span>07 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">field boundary beats object dump</div>
       <h2 class="headline small reveal delay-1" data-editable>telemetry should stop at the facts you choose.</h2>
@@ -2386,13 +2684,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>field selection is design</span><span>05 / 17</span></div>
+    <div class="slide-foot"><span>field selection is design</span><span>07 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Known log structure">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>known shape, populated fields</span><span>06 / 17</span></div>
+    <div class="slide-chrome"><span>known shape, populated fields</span><span>08 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">schema is the contract</div>
       <h2 class="headline small reveal delay-1" data-editable>known keys turn telemetry into a query surface.</h2>
@@ -2412,21 +2710,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>consistent keys make fast questions possible</span><span>06 / 17</span></div>
-  </div>
-</section>
-
-<section class="slide orange" data-title="Mental model">
-  <div class="slide-inner statement">
-    <div class="catalogue-num reveal">07 / the shift</div>
-    <div class="quote-mark reveal">“</div>
-    <h2 class="quote-text reveal delay-1" data-editable>Move from logging the process to logging the milestone.</h2>
+    <div class="slide-foot"><span>consistent keys make fast questions possible</span><span>08 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Useful log properties">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>what makes a log useful</span><span>08 / 17</span></div>
+    <div class="slide-chrome"><span>what makes a log useful</span><span>09 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">four properties to design for</div>
       <h2 class="headline small reveal delay-1" data-editable>a useful log is queryable, connected, specific, and contextual.</h2>
@@ -2437,13 +2727,13 @@ JSON.stringify(cart)
         <div class="principle reveal delay-5"><div class="num">04</div><h3 data-editable>contextual</h3><p data-editable>release, user, env inherited once.</p></div>
       </div>
     </div>
-    <div class="slide-foot"><span>the checklist before you emit</span><span>08 / 17</span></div>
+    <div class="slide-foot"><span>the checklist before you emit</span><span>09 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Design logs from questions">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>query backwards</span><span>09 / 17</span></div>
+    <div class="slide-chrome"><span>query backwards</span><span>10 / 19</span></div>
     <div class="content split">
       <div class="split-left">
         <div class="kicker reveal">start with the incident</div>
@@ -2470,13 +2760,46 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>fields are decisions</span><span>09 / 17</span></div>
+    <div class="slide-foot"><span>fields are decisions</span><span>10 / 19</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="LogTape interface">
+  <div class="slide-inner">
+    <div class="slide-chrome"><span>LogTape interface</span><span>11 / 19</span></div>
+    <div class="content">
+      <div class="kicker reveal">the concrete implementation</div>
+      <h2 class="headline small reveal delay-1" data-editable>LogTape gives the logging contract real primitives.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Categories, levels, fields, context, and sinks become code you can use consistently.</p>
+      <div class="logtape-intro-demo reveal delay-3" aria-label="LogTape primitives">
+        <div class="logtape-code-card">
+          <div class="label">structured milestone</div>
+          <pre>const logger = getLogger([
+  "frontend",
+  "checkout"
+])
+
+logger.info("checkout.completed", {
+  event: "checkout.completed",
+  orderId,
+  latencyMs
+})</pre>
+        </div>
+        <div class="logtape-callouts">
+          <div class="logtape-callout"><div class="label">category</div><p data-editable><code>getLogger([...])</code> scopes records without repeating strings.</p></div>
+          <div class="logtape-callout"><div class="label">level</div><p data-editable><code>info</code>, <code>warn</code>, and <code>error</code> describe operational weight.</p></div>
+          <div class="logtape-callout"><div class="label">fields</div><p data-editable>The object becomes searchable attributes in Sentry Logs.</p></div>
+          <div class="logtape-callout"><div class="label">sink</div><p data-editable>Sinks decide whether records go to console, Sentry, or both.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span>LogTape is the interface; Sentry operationalizes it</span><span>11 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Event versus context">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>event versus context</span><span>10 / 17</span></div>
+    <div class="slide-chrome"><span>event versus context</span><span>12 / 19</span></div>
     <div class="content split">
       <div class="split-left">
         <div class="kicker reveal">context is the carrying layer</div>
@@ -2509,17 +2832,17 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>event-local fields, inherited context</span><span>10 / 17</span></div>
+    <div class="slide-foot"><span>event-local fields, inherited context</span><span>12 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="LogTape context">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>LogTape context</span><span>11 / 17</span></div>
+    <div class="slide-chrome"><span>LogTape context</span><span>13 / 19</span></div>
     <div class="content">
-      <div class="kicker reveal">put context on the scope</div>
-      <h2 class="headline small reveal delay-1" data-editable>LogTape lets request data travel with every log.</h2>
-      <p class="lead muted reveal delay-2" data-editable>Use context for request/session scope. Keep each milestone explicit with stable keys.</p>
+      <div class="kicker reveal">now add request scope</div>
+      <h2 class="headline small reveal delay-1" data-editable>LogTape context lets request data travel with every log.</h2>
+      <p class="lead muted reveal delay-2" data-editable>Keep request/session fields on the scope. Keep each milestone explicit with stable keys.</p>
       <div class="logtape-context-demo reveal delay-3">
         <div class="context-code-card">
           <div class="label">implicit request context</div>
@@ -2549,13 +2872,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>context follows the call stack</span><span>11 / 17</span></div>
+    <div class="slide-foot"><span>context follows the call stack</span><span>13 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Queryable categories">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>queryable categories</span><span>12 / 17</span></div>
+    <div class="slide-chrome"><span>queryable categories</span><span>14 / 19</span></div>
     <div class="content">
       <div>
         <div class="kicker reveal">LogTape + Sentry</div>
@@ -2580,13 +2903,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>name the records before you query them</span><span>12 / 17</span></div>
+    <div class="slide-foot"><span>name the records before you query them</span><span>14 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Trace-connected logs">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>trace-connected logs</span><span>13 / 17</span></div>
+    <div class="slide-chrome"><span>trace-connected logs</span><span>15 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">Sentry connects the dots</div>
       <h2 class="headline small reveal delay-1" data-editable>The log is useful because it lands inside the trace.</h2>
@@ -2639,13 +2962,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>logs attached to spans</span><span>13 / 17</span></div>
+    <div class="slide-foot"><span>logs attached to spans</span><span>15 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Querying production">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>from search to operations</span><span>14 / 17</span></div>
+    <div class="slide-chrome"><span>from search to operations</span><span>16 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">Sentry Log Explorer</div>
       <h2 class="headline small reveal delay-1" data-editable>the same query can debug, dashboard, and alert.</h2>
@@ -2690,13 +3013,13 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>search once, operationalize the query</span><span>14 / 17</span></div>
+    <div class="slide-foot"><span>search once, operationalize the query</span><span>16 / 19</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Levels and sinks">
   <div class="slide-inner">
-    <div class="slide-chrome"><span>routing policy</span><span>15 / 17</span></div>
+    <div class="slide-chrome"><span>routing policy</span><span>17 / 19</span></div>
     <div class="content">
       <div class="kicker reveal">after design comes routing</div>
       <h2 class="headline small reveal delay-1" data-editable>keep debug local. send operational signal to Sentry.</h2>
@@ -2719,7 +3042,7 @@ JSON.stringify(cart)
         </div>
       </div>
     </div>
-    <div class="slide-foot"><span>route by operational value</span><span>15 / 17</span></div>
+    <div class="slide-foot"><span>route by operational value</span><span>17 / 19</span></div>
   </div>
 </section>
 
@@ -2740,7 +3063,7 @@ JSON.stringify(cart)
 
 <section class="slide orange" data-title="Thank you">
   <div class="slide-inner">
-    <div class="catalogue-num reveal">17 / end</div>
+    <div class="catalogue-num reveal">19 / end</div>
     <div class="thanks-layout">
       <div class="thanks-copy">
         <h2 class="thanks-title reveal delay-1" data-editable>thank you.</h2>
@@ -2773,7 +3096,7 @@ JSON.stringify(cart)
 </div>
 
 <div class="nav-ui" aria-hidden="true">
-  <span id="slideCounter">01 / 17</span>
+  <span id="slideCounter">01 / 19</span>
   <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
 </div>
 
